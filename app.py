@@ -4,7 +4,6 @@ query_cache = {}
 import os
 import psycopg2
 from fastapi import FastAPI, Request
-from slack_sdk import WebClient
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain.schema import HumanMessage
@@ -13,7 +12,6 @@ load_dotenv()
 
 app = FastAPI()
 
-slack_client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
 llm = ChatGroq(
     groq_api_key=os.getenv("GROQ_API_KEY"),
     model_name="llama-3.3-70b-versatile",
