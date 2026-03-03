@@ -1,3 +1,6 @@
+# Simple in-memory cache
+query_cache = {}
+
 import os
 import psycopg2
 from fastapi import FastAPI, Request
@@ -81,31 +84,40 @@ async def ask_data(request: Request):
     user_question = form.get("text")
 
     try:
+        # Check cache first
+        if user_question in query_cache:
+            cached_response = query_cache[user_question]
+            print("⚡ Cache hit")
+            return cached_response
+
+        # Generate SQL
         sql_query = generate_sql(user_question)
         print("Generated SQL:", sql_query)
 
+        # Execute query
         columns, rows = execute_sql(sql_query)
 
         if not rows:
-            return {
+            response = {
                 "response_type": "ephemeral",
                 "text": "No data found."
             }
+            query_cache[user_question] = response
+            return response
 
+        # Format results
         preview_lines = []
 
         for row in rows[:5]:
             formatted_values = []
-            
+
             for value in row:
-                # Convert Decimal to float
                 if hasattr(value, "as_tuple"):
                     value = float(value)
-                
-                # Format numbers nicely
+
                 if isinstance(value, float):
                     value = f"{value:.2f}"
-                
+
                 formatted_values.append(str(value))
 
             if len(formatted_values) == 2:
@@ -117,14 +129,19 @@ async def ask_data(request: Request):
 
         preview = "\n".join(preview_lines)
 
-        return {
+        response = {
             "response_type": "in_channel",
-            "text": f"*Query:*\n{sql_query}\n\n*Results:*\n{preview}"
+            "text": f"*Query:*\n```{sql_query}```\n\n*Results:*\n```{preview}```"
         }
 
+        # Store in cache
+        query_cache[user_question] = response
+
+        return response
+
     except Exception as e:
-        print("ERROR:", str(e))
-        return {
+        error_response = {
             "response_type": "ephemeral",
             "text": f"```{str(e)}```"
         }
+        return error_response
