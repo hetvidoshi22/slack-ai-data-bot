@@ -1,6 +1,6 @@
 ﻿# Slack AI Data Bot
 
-A minimal Slack AI application that converts natural language questions into SQL using **LangChain**, executes them on **Postgres**, and returns formatted results directly in Slack.
+A Slack AI application that converts natural language questions into SQL using **LangChain**, executes them on **Postgres**, and returns formatted results directly in Slack.
 
 ---
 
@@ -92,4 +92,5 @@ Google Drive Demo Link: [Paste Your Video Link Here]
 
 
 4. Set Slack Request URL to: https://<ngrok-url>/slack/ask-data
+
 
